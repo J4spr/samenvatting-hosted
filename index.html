@@ -1,0 +1,2069 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Science 1 — Samenvatting</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0f13;
+    --surface: #16181f;
+    --surface2: #1e2029;
+    --border: #2a2d3a;
+    --text: #e8eaf0;
+    --text-muted: #7c8098;
+    --text-dim: #a0a4bc;
+    --accent: #5b8af5;
+    --accent-soft: #1e2a4a;
+    --orange: #f97316;
+    --orange-soft: #2d1e0f;
+    --orange-border: #7a3a10;
+    --green: #22c55e;
+    --green-soft: #0d2a1a;
+    --yellow: #eab308;
+    --yellow-soft: #2a2208;
+    --purple: #a78bfa;
+    --purple-soft: #1e1a3a;
+    --red: #f87171;
+    --tag-bg: #1e2029;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.65;
+    min-height: 100vh;
+  }
+
+  /* ── Noise texture overlay ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.5;
+  }
+
+  /* ── Header ── */
+  header {
+    position: relative;
+    padding: 64px 0 48px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    top: -80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 300px;
+    background: radial-gradient(ellipse, rgba(91,138,245,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .badge {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid rgba(91,138,245,0.3);
+    padding: 4px 12px;
+    border-radius: 100px;
+    margin-bottom: 20px;
+  }
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.2rem, 5vw, 3.6rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+  h1 span { color: var(--accent); }
+  .subtitle {
+    color: var(--text-muted);
+    font-size: 15px;
+    font-weight: 300;
+    letter-spacing: 0.02em;
+  }
+
+  /* ── Layout ── */
+  .container {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── Nav TOC ── */
+  nav.toc {
+    position: sticky;
+    top: 0;
+    background: rgba(14,15,19,0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    z-index: 100;
+    padding: 0;
+  }
+  .nav-inner {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+  /* Top row: toggle button */
+  .nav-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    cursor: pointer;
+    user-select: none;
+    border: none;
+    background: none;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    width: 100%;
+    text-align: left;
+    transition: color 0.2s;
+  }
+  .nav-toggle:hover { color: var(--text); }
+  .nav-toggle .nav-toggle-arrow {
+    transition: transform 0.25s ease;
+    font-size: 10px;
+    margin-left: auto;
+  }
+  .nav-toggle.open .nav-toggle-arrow { transform: rotate(180deg); }
+  .nav-toggle .nav-crumb {
+    color: var(--accent);
+    font-size: 11px;
+    background: var(--accent-soft);
+    border: 1px solid rgba(91,138,245,0.25);
+    padding: 2px 8px;
+    border-radius: 100px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 340px;
+  }
+  /* Grid panel */
+  .nav-panel {
+    display: none;
+    padding: 12px 0 16px;
+    border-top: 1px solid var(--border);
+  }
+  .nav-panel.open { display: block; }
+  .nav-group-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 12px 0 6px;
+  }
+  .nav-group-label:first-child { margin-top: 0; }
+  .nav-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  nav.toc a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 12.5px;
+    font-weight: 500;
+    white-space: nowrap;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+  }
+  nav.toc a:hover {
+    color: var(--text);
+    border-color: rgba(91,138,245,0.4);
+    background: var(--surface2);
+  }
+  nav.toc a.orange-link {
+    color: var(--orange);
+    background: var(--orange-soft);
+    border-color: var(--orange-border);
+    opacity: 0.85;
+  }
+  nav.toc a.orange-link:hover { opacity: 1; border-color: var(--orange); }
+
+  /* ── Section headers ── */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 56px 0 32px;
+  }
+  .section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .section-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.02em;
+  }
+  .section-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  /* ── Orange section banner ── */
+  .orange-section-banner {
+    background: linear-gradient(135deg, var(--orange-soft) 0%, rgba(45,30,15,0.5) 100%);
+    border: 1px solid var(--orange-border);
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .orange-section-banner .icon {
+    font-size: 28px;
+    flex-shrink: 0;
+  }
+  .orange-section-banner h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.15rem;
+    color: var(--orange);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .orange-section-banner p {
+    font-size: 13px;
+    color: #c07a4a;
+    margin: 0;
+  }
+
+  /* ── Cards grid ── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+  }
+  .grid-wide {
+    grid-template-columns: 1fr;
+  }
+  .grid-2 {
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  }
+
+  /* ── Card ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+    transition: border-color 0.2s, transform 0.15s;
+  }
+  .card:hover {
+    border-color: rgba(91,138,245,0.35);
+    transform: translateY(-1px);
+  }
+  .card.orange-card {
+    background: var(--orange-soft);
+    border-color: var(--orange-border);
+  }
+  .card.orange-card:hover { border-color: var(--orange); }
+
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+  .card-title .dot.orange { background: var(--orange); }
+  .card-title .dot.green { background: var(--green); }
+  .card-title .dot.purple { background: var(--purple); }
+  .card-title .dot.yellow { background: var(--yellow); }
+
+  .card p, .card li {
+    font-size: 13.5px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+  .card ul { padding-left: 16px; }
+  .card li { margin-bottom: 4px; }
+  .card li::marker { color: var(--accent); }
+  .card.orange-card li::marker { color: var(--orange); }
+
+  /* ── Table ── */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    margin: 0;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+  thead tr {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 500;
+  }
+  td {
+    padding: 11px 16px;
+    border-bottom: 1px solid rgba(42,45,58,0.6);
+    color: var(--text-dim);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { font-weight: 500; color: var(--text); }
+  .check { color: var(--green); font-size: 15px; }
+  .cross { color: var(--text-muted); font-size: 15px; }
+
+  /* ── Code block ── */
+  .code-block {
+    background: #0a0b0e;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12.5px;
+    color: #a0c8ff;
+    overflow-x: auto;
+    line-height: 1.75;
+  }
+  .code-block .kw { color: #c792ea; }
+  .code-block .fn { color: #82aaff; }
+  .code-block .str { color: #c3e88d; }
+  .code-block .num { color: #f78c6c; }
+  .code-block .cm { color: #546e7a; font-style: italic; }
+
+  /* ── Info callout ── */
+  .callout {
+    display: flex;
+    gap: 14px;
+    padding: 16px 20px;
+    border-radius: 10px;
+    border-left: 3px solid;
+    margin: 16px 0;
+    font-size: 13.5px;
+  }
+  .callout.info { background: var(--accent-soft); border-color: var(--accent); color: #8cb0ff; }
+  .callout.warning { background: var(--yellow-soft); border-color: var(--yellow); color: #d4a832; }
+  .callout.tip { background: var(--green-soft); border-color: var(--green); color: #4ade80; }
+  .callout.orange { background: var(--orange-soft); border-color: var(--orange); color: #fb923c; }
+  .callout .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .callout p { margin: 0; }
+
+  /* ── Tag pills ── */
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 100px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .tag.blue { background: var(--accent-soft); border-color: rgba(91,138,245,0.3); color: var(--accent); }
+  .tag.orange { background: var(--orange-soft); border-color: var(--orange-border); color: var(--orange); }
+  .tag.green { background: var(--green-soft); border-color: rgba(34,197,94,0.3); color: var(--green); }
+
+  /* ── Meetniveaus big table ── */
+  .niveau-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .niveau-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    transition: border-color 0.2s;
+  }
+  .niveau-card:hover { border-color: rgba(91,138,245,0.3); }
+  .niveau-card .niveau-badge {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .niveau-card .niveau-badge.nominaal { color: #f87171; }
+  .niveau-card .niveau-badge.ordinaal { color: var(--yellow); }
+  .niveau-card .niveau-badge.interval { color: #38bdf8; }
+  .niveau-card .niveau-badge.ratio { color: var(--green); }
+  .niveau-card .cat {
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+  .cat.kwali { color: #f87171; }
+  .cat.kwanti { color: #38bdf8; }
+  .niveau-card p { font-size: 12.5px; color: var(--text-dim); }
+  .niveau-card .op { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+  .niveau-card .op span {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    border-radius: 4px;
+    color: var(--text-muted);
+  }
+
+  /* ── Formula block ── */
+  .formula-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+  }
+  .formula-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .formula-card h4 {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--purple);
+    margin-bottom: 8px;
+  }
+  .formula-card .formula {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: #c3e88d;
+    background: #0a0b0e;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+  }
+  .formula-card p { font-size: 12.5px; color: var(--text-dim); }
+
+  /* ── Responsive ── */
+  @media (max-width: 700px) {
+    .niveau-grid { grid-template-columns: repeat(2, 1fr); }
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 480px) {
+    .niveau-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── Scroll animation ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate { animation: fadeUp 0.5s ease both; }
+  .delay-1 { animation-delay: 0.08s; }
+  .delay-2 { animation-delay: 0.16s; }
+  .delay-3 { animation-delay: 0.24s; }
+
+  /* ── Widget list ── */
+  .widget-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .widget-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--orange-soft);
+    border: 1px solid var(--orange-border);
+    color: #fb923c;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 100px;
+  }
+  .widget-pill::before {
+    content: '◈';
+    font-size: 10px;
+  }
+
+  /* ── Step list ── */
+  .steps {
+    counter-reset: step;
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .steps li {
+    counter-increment: step;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    font-size: 13.5px;
+    color: var(--text-dim);
+  }
+  .steps li::before {
+    content: counter(step);
+    flex-shrink: 0;
+    width: 26px; height: 26px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    margin-top: 1px;
+  }
+  .steps.orange-steps li::before { color: var(--orange); }
+
+  /* ── Footer ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 24px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Data <span>Science</span> 1</h1>
+</header>
+
+<nav class="toc" id="main-nav">
+  <div class="nav-inner">
+    <button class="nav-toggle" id="nav-toggle" onclick="toggleNav()">
+      <span>📚 Inhoud</span>
+      <span class="nav-crumb" id="nav-crumb">Kies een sectie...</span>
+      <span class="nav-toggle-arrow">▼</span>
+    </button>
+    <div class="nav-panel" id="nav-panel">
+      <div class="nav-group-label">Theorie</div>
+      <div class="nav-grid">
+        <a href="#intro" onclick="navClick('Inleiding')">01 · Inleiding</a>
+        <a href="#basisbegrippen" onclick="navClick('Basisbegrippen')">02 · Basisbegrippen</a>
+        <a href="#meetniveaus" onclick="navClick('Meetniveaus')">03 · Meetniveaus</a>
+        <a href="#modelkwaliteit" onclick="navClick('Modelkwaliteit')">04 · Modelkwaliteit</a>
+        <a href="#frequenties" onclick="navClick('Frequenties')">05 · Frequenties &amp; Klassen</a>
+        <a href="#visualisaties" onclick="navClick('Visualisaties')">06 · Visualisaties</a>
+        <a href="#centrummaten" onclick="navClick('Centrummaten')">07 · Centrummaten</a>
+        <a href="#spreiding" onclick="navClick('Spreidingsmaten')">08 · Spreidingsmaten</a>
+        <a href="#normalisatie" onclick="navClick('Normalisatie & Uitschieters')">09 · Normalisatie &amp; Uitschieters</a>
+        <a href="#kansen" onclick="navClick('Kansen')">10 · Kansen</a>
+        <a href="#correlatie" onclick="navClick('Correlatie')">11 · Correlatie</a>
+        <a href="#regressie" onclick="navClick('Regressie')">12 · Regressie</a>
+      </div>
+      <div class="nav-group-label" style="margin-top:14px">Orange</div>
+      <div class="nav-grid">
+        <a href="#orange-data" class="orange-link" onclick="navClick('Orange: Data')">◈ Data inlezen</a>
+        <a href="#orange-freq" class="orange-link" onclick="navClick('Orange: Frequenties')">◈ Frequenties</a>
+        <a href="#orange-viz" class="orange-link" onclick="navClick('Orange: Visualisaties')">◈ Visualisaties</a>
+        <a href="#orange-centrum" class="orange-link" onclick="navClick('Orange: Centrummaten')">◈ Centrummaten</a>
+        <a href="#orange-spreiding" class="orange-link" onclick="navClick('Orange: Spreiding')">◈ Spreidingsmaten</a>
+        <a href="#orange-uitschieters" class="orange-link" onclick="navClick('Orange: Uitschieters')">◈ Uitschieters</a>
+        <a href="#orange-correlatie" class="orange-link" onclick="navClick('Orange: Correlatie')">◈ Correlatie</a>
+        <a href="#orange-regressie" class="orange-link" onclick="navClick('Orange: Regressie')">◈ Regressie</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<script>
+function toggleNav() {
+  const toggle = document.getElementById('nav-toggle');
+  const panel = document.getElementById('nav-panel');
+  toggle.classList.toggle('open');
+  panel.classList.toggle('open');
+}
+function navClick(label) {
+  document.getElementById('nav-crumb').textContent = label;
+  document.getElementById('nav-toggle').classList.remove('open');
+  document.getElementById('nav-panel').classList.remove('open');
+}
+// Highlight current section on scroll
+const sections = ['intro','basisbegrippen','meetniveaus','modelkwaliteit','frequenties','visualisaties','centrummaten','spreiding','normalisatie','kansen','correlatie','regressie','orange-data','orange-freq','orange-viz','orange-centrum','orange-spreiding','orange-uitschieters','orange-correlatie','orange-regressie'];
+const labels = {'intro':'Inleiding','basisbegrippen':'Basisbegrippen','meetniveaus':'Meetniveaus','modelkwaliteit':'Modelkwaliteit','frequenties':'Frequenties & Klassen','visualisaties':'Visualisaties','centrummaten':'Centrummaten','spreiding':'Spreidingsmaten','normalisatie':'Normalisatie & Uitschieters','kansen':'Kansen','correlatie':'Correlatie','regressie':'Regressie','orange-data':'Orange: Data','orange-freq':'Orange: Frequenties','orange-viz':'Orange: Visualisaties','orange-centrum':'Orange: Centrummaten','orange-spreiding':'Orange: Spreiding','orange-uitschieters':'Orange: Uitschieters','orange-correlatie':'Orange: Correlatie','orange-regressie':'Orange: Regressie'};
+window.addEventListener('scroll', () => {
+  let current = 'intro';
+  for (const id of sections) {
+    const el = document.getElementById(id);
+    if (el && el.getBoundingClientRect().top <= 80) current = id;
+  }
+  document.getElementById('nav-crumb').textContent = labels[current] || 'Kies een sectie...';
+});
+</script>
+
+<div class="container">
+
+  <!-- ══════════════════ INLEIDING ══════════════════ -->
+  <div class="section-divider" id="intro">
+    <span class="section-num">01</span>
+    <span class="section-label">Inleiding &amp; Overzicht</span>
+  </div>
+
+  <div class="grid animate">
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Wat is Data Science?</div>
+      <p style="margin-bottom:10px">"Everyone talks about it, nobody really knows how to do it, everyone thinks everyone else is doing it, so everyone claims they are doing it." — <em>Dan Ariely over big data</em></p>
+      <p>Data science = data omzetten naar informatie door variatie en verbanden te zoeken.</p>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot green"></span>Doelen van data-analyse</div>
+      <ul>
+        <li><strong>Wetmatigheden vinden</strong> — bijv. 3e wet van Kepler</li>
+        <li><strong>Optimaliseren</strong> — bijv. vorm van turbinebladen</li>
+        <li><strong>Beslissingen nemen</strong> — bijv. kan klant lening afbetalen?</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot yellow"></span>Soorten analyses (planning)</div>
+      <ul>
+        <li><strong>Descriptief</strong> — Wat gebeurt er? (P3)</li>
+        <li><strong>Exploratief</strong> — Waarom? correlatie, regressie (P4)</li>
+        <li><strong>Confirmatorisch</strong> — Zijn we zeker? (P4)</li>
+        <li><strong>Predictief</strong> — Wat zal er gebeuren? ML (P4)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout info" style="margin-top:16px">
+    <span class="callout-icon">💡</span>
+    <p><strong>Variatie zoeken:</strong> weinig variatie = weinig informatie. <strong>Verbanden zoeken:</strong> onderscheid tussen endogene factoren (je hebt controle: prijszetting, marketing) en exogene factoren (geen controle: inflatie, concurrentie).</p>
+  </div>
+
+  <!-- ══════════════════ BASISBEGRIPPEN ══════════════════ -->
+  <div class="section-divider" id="basisbegrippen">
+    <span class="section-num">02</span>
+    <span class="section-label">Basisbegrippen</span>
+  </div>
+
+  <div class="grid grid-2 animate delay-1">
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Soorten data</div>
+      <div class="table-wrap" style="margin-top:10px">
+        <table>
+          <thead><tr><th>Type</th><th>Kenmerken</th><th>Voorbeelden</th></tr></thead>
+          <tbody>
+            <tr><td>Gestructureerd</td><td>Rijen &amp; kolommen, makkelijk te bevragen</td><td>Naam, adres, transacties</td></tr>
+            <tr><td>Ongestructureerd</td><td>Verspreid, moeilijk te bevragen, preprocessing nodig</td><td>E-mails, video, geluid, rapporten</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout warning" style="margin-top:12px">
+        <span class="callout-icon">⚠</span>
+        <p>In deze cursus: focus op <strong>gestructureerde data</strong> in tabellen (CSV/relationele DB).</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot green"></span>Smart Data (Data Engineering)</div>
+      <p style="margin-bottom:10px; font-size:13px">Data is niet altijd valide — kan onvolledig, inconsistent of met fouten (ruis, extremen) zijn. Verwerking:</p>
+      <ol class="steps" style="font-size:13px">
+        <li>Selectie — capteren &amp; verzamelen</li>
+        <li>Opkuisen / zuiveren — verifiëren &amp; valideren</li>
+        <li>Verwerking — classificeren &amp; transformeren</li>
+        <li>Voorbereiding — juist formaat</li>
+      </ol>
+      <p style="margin-top:10px; font-size:12px; color:var(--text-muted)">→ Levert "smart data". Zeer arbeids- en tijdsintensief!</p>
+    </div>
+  </div>
+
+  <div style="margin-top:16px" class="grid animate delay-2">
+    <div class="card">
+      <div class="card-title"><span class="dot purple"></span>Datapunten &amp; Datareeksen</div>
+      <ul>
+        <li><strong>Datapunt (observatie):</strong> resultaat van 1 meting op 1 object — heeft een waarde + context</li>
+        <li><strong>Datareeks:</strong> reeks observaties van hetzelfde soort, voorgesteld als tabel</li>
+        <li><strong>Variabelen:</strong> kolommen in de tabel — bevatten waarden van 1 eigenschap per datapunt</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot yellow"></span>Afhankelijke &amp; Onafhankelijke variabelen</div>
+      <ul>
+        <li><strong>Afhankelijke variabele (target):</strong> wat je wil verklaren/voorspellen</li>
+        <li><strong>Onafhankelijke variabele:</strong> de verklarende factoren</li>
+      </ul>
+      <div class="callout info" style="margin-top:10px">
+        <span class="callout-icon">📌</span>
+        <p>Voorbeeld: "Linux is veiliger dan Windows" → afhankelijk: aanvallen; onafhankelijk: OS-type</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Uni- Bi- en Multivariate analyse</div>
+      <ul>
+        <li><strong>Univariaat:</strong> slechts 1 variabele bekijken (geen afhankelijke)</li>
+        <li><strong>Bivariaat:</strong> verband tussen 2 variabelen (1 onafh. + 1 afh.)</li>
+        <li><strong>Multivariaat:</strong> verband tussen meerdere variabelen (1 afh. + meerdere onafh.)</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ══════════════════ MEETNIVEAUS ══════════════════ -->
+  <div class="section-divider" id="meetniveaus">
+    <span class="section-num">03</span>
+    <span class="section-label">Meetniveaus</span>
+  </div>
+
+  <div class="callout info" style="margin-bottom:20px">
+    <span class="callout-icon">🎯</span>
+    <p><strong>Belangrijk:</strong> het <em>type</em> van een variabele bepaalt hoe ze opgeslagen is. Het <em>meetniveau</em> bepaalt wat je ermee mag doen. Type ≠ meetniveau!</p>
+  </div>
+
+  <div class="niveau-grid animate">
+    <div class="niveau-card">
+      <div class="cat kwali">Kwalitatief</div>
+      <div class="niveau-badge nominaal">Nominaal</div>
+      <p>Waarden zijn namen of categorieën. <strong>Geen volgorde.</strong></p>
+      <p style="margin-top:8px; font-size:12px; color:var(--text-muted)">Voorbeelden: bloedgroep, computermerk, afstudeerrichting, huisdier</p>
+      <div class="op">
+        <span>==</span><span>!=</span>
+      </div>
+    </div>
+    <div class="niveau-card">
+      <div class="cat kwali">Kwalitatief</div>
+      <div class="niveau-badge ordinaal">Ordinaal</div>
+      <p>Categorieën met <strong>natuurlijke volgorde</strong>, maar geen vaste afstand tussen waarden.</p>
+      <p style="margin-top:8px; font-size:12px; color:var(--text-muted)">Voorbeelden: militaire rang, tevredenheidsscores, opleidingsniveau, pijnschaal</p>
+      <div class="op">
+        <span>==</span><span>!=</span><span>&lt;</span><span>&gt;</span>
+      </div>
+    </div>
+    <div class="niveau-card">
+      <div class="cat kwanti">Kwantitatief</div>
+      <div class="niveau-badge interval">Interval</div>
+      <p>Getallen met <strong>vaste afstand</strong>. Geen absoluut nulpunt — verhoudingen zinloos. Negatieve getallen mogelijk.</p>
+      <p style="margin-top:8px; font-size:12px; color:var(--text-muted)">Voorbeelden: temperatuur °C, balans EUR, tijdstip</p>
+      <div class="op">
+        <span>==</span><span>!=</span><span>&lt;</span><span>&gt;</span><span>+</span><span>-</span>
+      </div>
+    </div>
+    <div class="niveau-card">
+      <div class="cat kwanti">Kwantitatief</div>
+      <div class="niveau-badge ratio">Ratio</div>
+      <p>Getallen met vaste afstand <strong>én absoluut nulpunt</strong>. Verhoudingen zijn zinvol. Geen negatieve waarden.</p>
+      <p style="margin-top:8px; font-size:12px; color:var(--text-muted)">Voorbeelden: temperatuur K, lengte cm, gewicht kg, leeftijd</p>
+      <div class="op">
+        <span>==</span><span>!=</span><span>&lt;</span><span>&gt;</span><span>+</span><span>-</span><span>×</span><span>÷</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:20px" class="grid grid-2 animate delay-1">
+    <div class="card">
+      <div class="card-title"><span class="dot yellow"></span>Discreet vs Continu</div>
+      <ul>
+        <li><strong>Discreet:</strong> enkel bepaalde waarden mogelijk. Nominaal &amp; ordinaal zijn altijd discreet. Bv. RAM in GB, score op 10</li>
+        <li><strong>Continu:</strong> alle waarden (binnen grenzen) mogelijk. Enkel kwantitatieve variabelen. Bv. lengte, bitcoin-waarde</li>
+        <li><strong>Quasi-continu:</strong> discreet maar enorm veel mogelijke waarden</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Overzichtstabel</div>
+      <div class="table-wrap" style="margin-top:8px">
+        <table>
+          <thead><tr><th>Niveau</th><th>Volgorde</th><th>Diff.</th><th>Verh.</th></tr></thead>
+          <tbody>
+            <tr><td style="color:#f87171">Nominaal</td><td class="cross">✗</td><td class="cross">✗</td><td class="cross">✗</td></tr>
+            <tr><td style="color:var(--yellow)">Ordinaal</td><td class="check">✓</td><td class="cross">✗</td><td class="cross">✗</td></tr>
+            <tr><td style="color:#38bdf8">Interval</td><td class="check">✓</td><td class="check">✓</td><td class="cross">✗</td></tr>
+            <tr><td style="color:var(--green)">Ratio</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ MODELKWALITEIT ══════════════════ -->
+  <div class="section-divider" id="modelkwaliteit">
+    <span class="section-num">04</span>
+    <span class="section-label">Modelkwaliteit</span>
+  </div>
+
+  <div class="grid animate">
+    <div class="card">
+      <div class="card-title"><span class="dot green"></span>Betrouwbaarheid</div>
+      <p>Een meting is betrouwbaar als <strong>externe factoren weinig invloed</strong> hebben op de meting.</p>
+      <p style="margin-top:8px; font-size:13px; color:var(--text-muted)">Niet betrouwbaar? → Herhaal de meting meerdere keren en neem het gemiddelde/mediaan.</p>
+      <div class="callout tip" style="margin-top:12px">
+        <span class="callout-icon">📐</span>
+        <p>Bv. examenpunten kunnen verschillen bij studenten met dezelfde kennis; lengtemetingen afwijken door meetmethode.</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot purple"></span>Validiteit</div>
+      <p>Een meting is valide als het <strong>meet wat het moet meten</strong>.</p>
+      <p style="margin-top:8px; font-size:13px; color:var(--text-muted)">Niet altijd vanzelfsprekend!</p>
+      <div class="callout warning" style="margin-top:12px">
+        <span class="callout-icon">❓</span>
+        <p>Meet een IQ-test echt intelligentie? Hoe meet je assertiviteit of wiskundeaanleg?</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot yellow"></span>Combinaties</div>
+      <ul>
+        <li><strong>Betrouwbaar + Valide:</strong> ideaal ✓</li>
+        <li><strong>Betrouwbaar maar niet valide:</strong> consistent maar meet het verkeerde</li>
+        <li><strong>Niet betrouwbaar + niet valide:</strong> waardeloos</li>
+        <li><strong>Niet betrouwbaar maar valide:</strong> moeilijk — random fouten rond de ware waarde</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ══════════════════ FREQUENTIES ══════════════════ -->
+  <div class="section-divider" id="frequenties">
+    <span class="section-num">05</span>
+    <span class="section-label">Frequenties &amp; Klassen</span>
+  </div>
+
+  <div class="callout info" style="margin-bottom:0">
+    <span class="callout-icon">📌</span>
+    <p>Frequenties zijn zinvol voor alle meetniveaus. Cumulatieve frequenties enkel voor <strong>ordinale of kwantitatieve</strong> variabelen (volgorde vereist).</p>
+  </div>
+  </div>
+
+  <div class="grid grid-2 animate">
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>4 Soorten frequenties</div>
+      <div class="table-wrap" style="margin-top:8px">
+        <table>
+          <thead><tr><th>Type</th><th>Omschrijving</th><th>Formule</th></tr></thead>
+          <tbody>
+            <tr><td>Absoluut</td><td>Hoeveel keer een waarde voorkomt</td><td style="font-family:monospace; font-size:12px">count(x)</td></tr>
+            <tr><td>Relatief</td><td>Aandeel van het totaal</td><td style="font-family:monospace; font-size:12px">freq / n</td></tr>
+            <tr><td>Cumulatief</td><td>Hoeveel "of minder" voorkomt</td><td style="font-family:monospace; font-size:12px">∑ freq</td></tr>
+            <tr><td>Cum. %</td><td>Cumulatief als percentage</td><td style="font-family:monospace; font-size:12px">cum / n × 100</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout warning" style="margin-top:12px">
+        <span class="callout-icon">⚠</span>
+        <p>Cumulatieve frequenties zijn alleen zinvol bij <strong>ordinale of kwantitatieve</strong> variabelen (er moet een volgorde zijn).</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot green"></span>Kruistabellen (Pivot tables)</div>
+      <p>Bivariate frequentietabel: splits 1 variabele op aan de hand van een andere en tel hoeveel iedere waarde voorkomt.</p>
+      <div class="callout info" style="margin-top:12px">
+        <span class="callout-icon">📊</span>
+        <p><strong>Percentielscores:</strong> gebruik cumulatieve percentages als punten = score ten opzichte van de groep. Nadeel: altijd 50% geslaagd ongeacht kennis.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:16px" class="card animate delay-1">
+    <div class="card-title"><span class="dot purple"></span>Klassen (Bins) — voor (quasi-)continue variabelen</div>
+    <p style="margin-bottom:14px">Continue variabelen worden opgesplitst in klassen (intervallen). Iedere klasse heeft een <strong>klassebreedte</strong> en een <strong>klassemidden</strong>. Vuistregel: <strong>5 tot 20 klassen</strong>. Na de opsplitsing is het resulterende meetniveau <em>ordinaal</em>.</p>
+    <div class="formula-grid">
+      <div class="formula-card">
+        <h4>Sturges</h4>
+        <div class="formula">⌈log₂(n) + 1⌉</div>
+        <p>Eenvoudigste methode. Enkel n nodig.</p>
+      </div>
+      <div class="formula-card">
+        <h4>Scott</h4>
+        <div class="formula">b = 3.5 × s / ∛n<br>k = ⌈(max − min) / b⌉</div>
+        <p>Gebruikt standaardafwijking s.</p>
+      </div>
+      <div class="formula-card">
+        <h4>Freedman–Diaconis</h4>
+        <div class="formula">b = 2 × IQR / ∛n<br>k = ⌈(max − min) / b⌉</div>
+        <p>Gebruikt IQR (interkwartielafstand).</p>
+      </div>
+      <div class="formula-card">
+        <h4>Excel</h4>
+        <div class="formula">⌈√n⌉</div>
+        <p>Eenvoudig, geeft meer klassen.</p>
+      </div>
+    </div>
+    <div class="callout tip" style="margin-top:14px">
+      <span class="callout-icon">💻</span>
+      <p><strong>Java — Sturges:</strong> <code style="font-family:monospace; background:#0a0b0e; padding:2px 6px; border-radius:4px; color:#c3e88d">Math.ceil(Math.log(n)/Math.log(2) + 1)</code> &nbsp;|&nbsp; <strong>Scott klassebreedte:</strong> <code style="font-family:monospace; background:#0a0b0e; padding:2px 6px; border-radius:4px; color:#c3e88d">3.5 * s / Math.pow(n, 1/3.0)</code></p>
+    </div>
+  </div>
+
+  <!-- ══════════════════ VISUALISATIES ══════════════════ -->
+  <div class="section-divider" id="visualisaties">
+    <span class="section-num">06</span>
+    <span class="section-label">Visualisaties</span>
+  </div>
+
+  <div class="callout info" style="margin-bottom:20px">
+    <span class="callout-icon">📊</span>
+    <p>Grafieken helpen bij het sneller begrijpen van gegevens, tonen trends, patronen en afwijkingen, en vergemakkelijken vergelijking. <strong>Altijd:</strong> assen benoemen (naam + eenheid) en een titel geven.</p>
+  </div>
+
+  <div class="grid animate">
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Discrete variabelen</div>
+      <ul>
+        <li><strong>Taartdiagram:</strong> enkel bij zeer weinig waarden of expres vaag. Slechte keuze bij veel categorieën.</li>
+        <li><strong>Staafdiagram:</strong> standaard keuze voor discrete variabelen. Balken naast elkaar, gestapeld of genormaliseerd.</li>
+        <li><strong>Andere:</strong> spindiagram, radarplot, wordcloud</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot green"></span>Continue variabelen</div>
+      <ul>
+        <li><strong>Histogram:</strong> staven aan elkaar geplakt, X-as is continu. Vereist klassen. Gebruikt bij interval/ratio.</li>
+        <li><strong>Frequentiepolygoon:</strong> verbind alle toppen van de staven. Alternatief voor histogram.</li>
+        <li><strong>Tijdsgebonden data:</strong> lijndiagram. Enkel zinvol bij minstens interval meetniveau.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot purple"></span>Centrum &amp; Spreiding</div>
+      <ul>
+        <li><strong>Boxplot:</strong> toont minimum, Q1, Q2 (mediaan), Q3, maximum en uitschieters. Minstens ordinaal.</li>
+        <li><strong>Violin plot:</strong> toont ook de distributie/verdeling. Continue variabele vereist.</li>
+        <li><strong>Geen specifieke grafiek</strong> voor gemiddelde/standaardafwijking — gevoelig aan uitschieters.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot yellow"></span>Bivariate grafieken</div>
+      <ul>
+        <li><strong>Scatter plot:</strong> 2 continue variabelen. Toont correlatie en patroon (lineair of niet).</li>
+        <li><strong>Box plot (bivariaat):</strong> 1 continue + 1 discrete variabele. Maak een boxplot per waarde van de discrete variabele.</li>
+        <li><strong>Staafdiagram (bivariaat):</strong> beide variabelen discreet. Bars naast elkaar, op elkaar of genormaliseerd.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="margin-top:16px" class="card animate delay-1">
+    <div class="card-title"><span class="dot"></span>Wanneer welke grafiek?</div>
+    <div class="table-wrap" style="margin-top:8px">
+      <table>
+        <thead><tr><th>Situatie</th><th>Grafiek</th><th>Meetniveau</th></tr></thead>
+        <tbody>
+          <tr><td>1 discrete variabele (weinig waarden)</td><td>Taartdiagram of staafdiagram</td><td>Nominaal+</td></tr>
+          <tr><td>1 continue variabele</td><td>Histogram of frequentiepolygoon</td><td>Interval/Ratio</td></tr>
+          <tr><td>Tijdsgebonden data</td><td>Lijndiagram</td><td>Interval+</td></tr>
+          <tr><td>Mediaan en spreiding</td><td>Boxplot of violin plot</td><td>Ordinaal+</td></tr>
+          <tr><td>2 continue variabelen (correlatie)</td><td>Scatter plot</td><td>Interval/Ratio</td></tr>
+          <tr><td>1 continue + 1 discrete (verband)</td><td>Box plot (meerdere)</td><td>Ordinaal+</td></tr>
+          <tr><td>2 discrete variabelen (verband)</td><td>Gestapeld/genormaliseerd staafdiagram</td><td>Nominaal+</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════════════ CENTRUMMATEN ══════════════════ -->
+  <div class="section-divider" id="centrummaten">
+    <span class="section-num">07</span>
+    <span class="section-label">Centrummaten</span>
+  </div>
+
+  <div class="callout info" style="margin-bottom:20px">
+    <span class="callout-icon">🎯</span>
+    <p>Centrummaten zoeken een waarde waarrond alle waarden van 1 variabele schommelen. De keuze hangt af van het meetniveau.</p>
+  </div>
+
+  <div class="grid animate">
+    <div class="card">
+      <div class="card-title"><span class="dot yellow"></span>Modus</div>
+      <ul>
+        <li>De <strong>meest voorkomende waarde</strong></li>
+        <li>Geldig <strong>vanaf nominaal</strong> meetniveau</li>
+        <li>Eenvoudig te bepalen via frequentietabel</li>
+        <li><strong>Ongevoelig voor uitschieters</strong> — modus kijkt enkel naar frequentie, niet naar waarden</li>
+        <li>Bij klassen: indeling kan veel invloed hebben</li>
+        <li>Er kunnen meerdere modi zijn (bimodaal, multimodaal)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Mediaan</div>
+      <ul>
+        <li>De <strong>middelste waarde</strong> na sortering. Bij even n: gemiddelde van de 2 middelste.</li>
+        <li>Geldig <strong>vanaf ordinaal</strong> meetniveau</li>
+        <li><strong>Ongevoelig voor extremen</strong> — enkel volgorde telt, niet de grootte</li>
+        <li>Geen klassen nodig</li>
+        <li>Geen exacte formule → moeilijker voor wiskundige bewijzen</li>
+        <li>Vereist sortering: veel rekenwerk bij grote datasets</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot green"></span>Rekenkundig gemiddelde</div>
+      <div class="formula-grid" style="margin-top:8px">
+        <div class="formula-card">
+          <h4>Formule</h4>
+          <div class="formula">x̄ = (1/n) · Σ xᵢ</div>
+          <p>Geldig vanaf <strong>interval</strong> meetniveau.</p>
+        </div>
+        <div class="formula-card">
+          <h4>Vanuit frequentietabel</h4>
+          <div class="formula">x̄ = (1/n) · Σ fᵢ · xᵢ</div>
+          <p>fᵢ = absolute frequentie van xᵢ</p>
+        </div>
+      </div>
+      <div class="callout warning" style="margin-top:10px">
+        <span class="callout-icon">⚠</span>
+        <p><strong>Gevoelig voor uitschieters.</strong> Bekomen waarde bestaat niet noodzakelijk. Heeft wel een exacte formule → makkelijker voor wiskundige eigenschappen.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:16px" class="card animate delay-1">
+    <div class="card-title"><span class="dot purple"></span>Andere gemiddelden</div>
+    <div class="formula-grid">
+      <div class="formula-card">
+        <h4>Gewogen gemiddelde</h4>
+        <div class="formula">x̄ = (1/Σgᵢ) · Σ gᵢ·xᵢ</div>
+        <p>Bij studiepunten als gewichten. Iedere waarde weegt anders mee.</p>
+      </div>
+      <div class="formula-card">
+        <h4>Meetkundig gemiddelde</h4>
+        <div class="formula">x̄ = (∏xᵢ)^(1/n)</div>
+        <p>Bij procentuele veranderingen (koersen, groeipercentages). Bv. +5%, +3%, −2%.</p>
+      </div>
+      <div class="formula-card">
+        <h4>Harmonisch gemiddelde</h4>
+        <div class="formula">1/x̄ = (1/n)·Σ(1/xᵢ)</div>
+        <p>Bij snelheden over gelijke afstanden. Bv. heen 120 km/h, terug 100 km/h.</p>
+      </div>
+      <div class="formula-card">
+        <h4>Voortschrijdend gemiddelde</h4>
+        <div class="formula">gemiddelde van laatste n waarden</div>
+        <p>Bij datastroom (stream). Vlakt grillige tijdsgebonden grafieken af.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:16px" class="grid grid-2 animate delay-2">
+    <div class="card">
+      <div class="card-title"><span class="dot yellow"></span>Linkse en rechtse scheefheid</div>
+      <div class="table-wrap" style="margin-top:8px">
+        <table>
+          <thead><tr><th>Type</th><th>Kenmerken</th><th>Volgorde</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--green)">Symmetrisch</td><td>Normaalverdeling</td><td>Modus = Mediaan = Gemiddelde</td></tr>
+            <tr><td style="color:#38bdf8">Links scheef (negative skew)</td><td>Staart naar links, piek rechts</td><td>Gemiddelde &lt; Mediaan &lt; Modus</td></tr>
+            <tr><td style="color:var(--orange)">Rechts scheef (positive skew)</td><td>Staart naar rechts, piek links</td><td>Modus &lt; Mediaan &lt; Gemiddelde</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Overzicht: welk centrum?</div>
+      <div class="table-wrap" style="margin-top:8px">
+        <table>
+          <thead><tr><th>Centrummaat</th><th>Vanaf</th><th>Uitschieters</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--yellow)">Modus</td><td>Nominaal</td><td>Niet gevoelig</td></tr>
+            <tr><td style="color:#38bdf8">Mediaan</td><td>Ordinaal</td><td>Niet gevoelig</td></tr>
+            <tr><td style="color:var(--green)">Gemiddelde</td><td>Interval</td><td>Gevoelig !</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ SPREIDINGSMATEN ══════════════════ -->
+  <div class="section-divider" id="spreiding">
+    <span class="section-num">08</span>
+    <span class="section-label">Spreidingsmaten</span>
+  </div>
+
+  <div class="callout info" style="margin-bottom:20px">
+    <span class="callout-icon">📐</span>
+    <p>Spreidingsmaten geven weer hoeveel de data van 1 variabele schommelt rond een centrum. Ze zijn complementair aan centrummaten.</p>
+  </div>
+
+  <div class="grid grid-2 animate">
+    <div class="card">
+      <div class="card-title"><span class="dot red" style="background:var(--red)"></span>Bereik</div>
+      <p>Verschil tussen maximum en minimum waarde.</p>
+      <div class="formula-grid" style="margin-top:10px">
+        <div class="formula-card">
+          <h4>Formule</h4>
+          <div class="formula">bereik = max(X) − min(X)</div>
+          <p>Geldig vanaf <strong>interval</strong> meetniveau.</p>
+        </div>
+      </div>
+      <div class="callout warning" style="margin-top:10px">
+        <span class="callout-icon">⚠</span>
+        <p>Nadeel: <strong>gevoelig aan uitschieters</strong> — één extreme waarde verandert het bereik volledig.</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Interkwartielafstand (IQR)</div>
+      <p>Kwantielen zijn varianten op de mediaan: splits de gesorteerde data in gelijke delen.</p>
+      <ul style="margin-top:8px">
+        <li><strong>Kwartielen:</strong> 4 delen → Q1, Q2, Q3</li>
+        <li><strong>Decielen:</strong> 10 delen</li>
+        <li><strong>Percentielen:</strong> 100 delen</li>
+      </ul>
+      <div class="formula-grid" style="margin-top:10px">
+        <div class="formula-card">
+          <h4>IQR formule</h4>
+          <div class="formula">IQR = Q3 − Q1</div>
+          <p>Bereik nadat je de 25% grootste en kleinste waarden schrapt. Vanaf <strong>ordinaal</strong> (kwartielen). IQR zelf vereist <strong>interval</strong>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:16px" class="card animate delay-1">
+    <div class="card-title"><span class="dot green"></span>Standaardafwijking</div>
+    <p style="margin-bottom:12px">Maat voor de gemiddelde afwijking van alle waarden ten opzichte van het gemiddelde. Geldig vanaf <strong>interval</strong>.</p>
+    <div class="formula-grid">
+      <div class="formula-card">
+        <h4>Poging (probleem)</h4>
+        <div class="formula">(1/n) · Σ (xᵢ − x̄)</div>
+        <p>Probleem: positieve en negatieve afwijkingen heffen elkaar op → altijd 0.</p>
+      </div>
+      <div class="formula-card">
+        <h4>MAD (Mean Absolute Deviation)</h4>
+        <div class="formula">(1/n) · Σ |xᵢ − x̄|</div>
+        <p>Neem absolute waarden. Minder wiskundig handig.</p>
+      </div>
+      <div class="formula-card">
+        <h4>Variantie (s²)</h4>
+        <div class="formula">(1/n) · Σ (xᵢ − x̄)²</div>
+        <p>Kwadrateer de afwijkingen. Andere eenheid (bv. °C² i.p.v. °C).</p>
+      </div>
+      <div class="formula-card">
+        <h4>Standaardafwijking (s)</h4>
+        <div class="formula">s = √[(1/n) · Σ (xᵢ − x̄)²]</div>
+        <p>Neem vierkantswortel van variantie. Zelfde eenheid als data.</p>
+      </div>
+    </div>
+    <div class="callout warning" style="margin-top:12px">
+      <span class="callout-icon">🔧</span>
+      <p><strong>Bessel-correctie (steekproef):</strong> In een steekproef onderschat men de echte standaardafwijking. Gebruik <code style="font-family:monospace; background:#0a0b0e; padding:2px 6px; border-radius:4px; color:#c3e88d">s = √[1/(n−1) · Σ (xᵢ − x̄)²]</code> voor betere schatting.</p>
+    </div>
+  </div>
+
+  <div style="margin-top:16px" class="grid grid-2 animate delay-2">
+    <div class="card">
+      <div class="card-title"><span class="dot yellow"></span>Invloed van uitschieters</div>
+      <div class="table-wrap" style="margin-top:8px">
+        <table>
+          <thead><tr><th>Maat</th><th>Gevoelig?</th></tr></thead>
+          <tbody>
+            <tr><td>Gemiddelde</td><td style="color:var(--red)">Ja !</td></tr>
+            <tr><td>Standaardafwijking</td><td style="color:var(--red)">Ja !</td></tr>
+            <tr><td>Bereik</td><td style="color:var(--red)">Ja (definitie!)</td></tr>
+            <tr><td>Mediaan</td><td style="color:var(--green)">Nee</td></tr>
+            <tr><td>IQR</td><td style="color:var(--green)">Nee</td></tr>
+            <tr><td>Modus</td><td style="color:var(--green)">Nee</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Paarsgewijze keuzes</div>
+      <ul>
+        <li><strong>Mediaan ↔ IQR:</strong> robuust paar, te prefereren bij uitschieters of scheeve verdeling</li>
+        <li><strong>Gemiddelde ↔ Standaardafwijking:</strong> bij symmetrische verdeling zonder uitschieters</li>
+        <li>De standaardafwijking heeft een formule → wiskundig handig (regressie, kansen, ...)</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ══════════════════ NORMALISATIE & UITSCHIETERS ══════════════════ -->
+  <div class="section-divider" id="normalisatie">
+    <span class="section-num">09</span>
+    <span class="section-label">Normalisatie &amp; Uitschieters</span>
+  </div>
+
+  <div class="grid grid-2 animate">
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Methode 1: Bereik aanpassen (min-max)</div>
+      <div class="formula-grid" style="margin-top:8px">
+        <div class="formula-card">
+          <h4>Formule</h4>
+          <div class="formula">x'ᵢ = (xᵢ − min) / (max − min)</div>
+          <p>Alle waarden liggen daarna tussen 0 en 1.</p>
+        </div>
+      </div>
+      <ul style="margin-top:10px">
+        <li><strong>Voordeel:</strong> eenvoudig</li>
+        <li><strong>Nadeel:</strong> onderlinge verhoudingen kunnen veranderen; centrum en spreiding veranderen onafhankelijk van andere variabelen</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot green"></span>Methode 2: Z-scores (standaardisatie)</div>
+      <div class="formula-grid" style="margin-top:8px">
+        <div class="formula-card">
+          <h4>Formule</h4>
+          <div class="formula">zᵢ = (xᵢ − x̄) / sₓ</div>
+          <p>Stap 1: trek gemiddelde af → gemiddelde wordt 0. Stap 2: deel door s → s wordt 1.</p>
+        </div>
+      </div>
+      <ul style="margin-top:10px">
+        <li><strong>Z=0:</strong> waarde = gemiddelde</li>
+        <li><strong>Z=3:</strong> 3 standaardafwijkingen boven gemiddelde</li>
+        <li><strong>Z=−0.5:</strong> half een standaardafwijking onder gemiddelde</li>
+      </ul>
+      <div class="callout tip" style="margin-top:10px">
+        <span class="callout-icon">✓</span>
+        <p>Meest gebruikte methode! Onderlinge verhoudingen binnen variabele blijven bewaard.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:16px" class="card animate delay-1">
+    <div class="card-title"><span class="dot purple"></span>Uitschieters (Outliers)</div>
+    <p style="margin-bottom:12px">Een uitschieter is een extreem hoge of lage waarde. Oorzaken: menselijke fout, opzettelijk verkeerde invoer, storing meetapparatuur, of echte zeldzame waarde. <em>Uitschieters kunnen ook waardevolle informatie bevatten!</em></p>
+    <div class="grid grid-2" style="gap:12px">
+      <div>
+        <p style="font-size:13px; color:var(--text-muted); margin-bottom:8px; font-family:'DM Mono',monospace; text-transform:uppercase; font-size:11px; letter-spacing:0.08em">Uitschieters vinden</p>
+        <ul style="font-size:13px; color:var(--text-dim); padding-left:16px">
+          <li>Boxplot of histogram bekijken</li>
+          <li>Verschil mediaan vs gemiddelde</li>
+          <li>Verschil gemiddelde vs getrimd gemiddelde</li>
+          <li>Z-scores: |z| &gt; 3 (of andere grens)</li>
+          <li><strong>IQR-methode:</strong> zie formules rechts</li>
+        </ul>
+      </div>
+      <div class="formula-card" style="margin:0">
+        <h4>IQR-methode voor uitschieters</h4>
+        <div class="formula">low  = Q1 − 1.5 × IQR<br>high = Q3 + 1.5 × IQR</div>
+        <p>Alles buiten [low, high] = uitschieter.<br><strong>Extreme uitschieter:</strong> factor 3 i.p.v. 1.5</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ KANSEN ══════════════════ -->
+  <div class="section-divider" id="kansen">
+    <span class="section-num">10</span>
+    <span class="section-label">Kansen</span>
+  </div>
+
+  <div class="callout info" style="margin-bottom:20px">
+    <span class="callout-icon">🎲</span>
+    <p>Kansen zijn relatieve frequenties van een theoretische oneindige steekproef. Ze spelen een grote rol in machine learning (LLM's berekenen kansen per woord) en IT (availability van servers).</p>
+  </div>
+
+  <div class="grid grid-2 animate">
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Kansen volgens Laplace</div>
+      <div class="formula-grid" style="margin-top:8px">
+        <div class="formula-card">
+          <h4>Definitie</h4>
+          <div class="formula">P(G) = #gunstig / #mogelijk</div>
+          <p>Geldig bij een "afgelijnd experiment" met gelijke kansen voor alle uitkomsten.</p>
+        </div>
+      </div>
+      <ul style="margin-top:10px">
+        <li>0 ≤ P(G) ≤ 1</li>
+        <li>Som van alle mogelijke uitkomsten = 1 (100%)</li>
+        <li>Kans × 100 = kans in procent (altijd % erbij!)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot yellow"></span>Voorwaardelijke kansen</div>
+      <p>Kansen kunnen afhangen van extra kennis:</p>
+      <div class="formula-grid" style="margin-top:8px">
+        <div class="formula-card">
+          <h4>Notatie</h4>
+          <div class="formula">P(A | B)</div>
+          <p>Kans op A gegeven dat B al bekend is. Als P(A) = P(A|B) dan zijn A en B <strong>onafhankelijk</strong>.</p>
+        </div>
+      </div>
+      <div class="callout tip" style="margin-top:10px">
+        <span class="callout-icon">📊</span>
+        <p>Voorwaardelijke kansen aflezen uit kruistabellen: kijk naar de rij of kolom van de gegeven voorwaarde.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:16px" class="card animate delay-1">
+    <div class="card-title"><span class="dot green"></span>Rekenen met kansen</div>
+    <div class="formula-grid">
+      <div class="formula-card">
+        <h4>Inverse (complement)</h4>
+        <div class="formula">P(niet A) = 1 − P(A)</div>
+        <p>Als P(regen) = 55% → P(geen regen) = 45%</p>
+      </div>
+      <div class="formula-card">
+        <h4>Productregel (EN)</h4>
+        <div class="formula">P(A en B) = P(A) · P(B|A)</div>
+        <p>Bij onafhankelijke gebeurtenissen: P(A en B) = P(A) · P(B)</p>
+      </div>
+      <div class="formula-card">
+        <h4>Somregel (OF)</h4>
+        <div class="formula">P(A of B) = P(A) + P(B) − P(A en B)</div>
+        <p>Aftrekken want A en B kunnen samen voorkomen.</p>
+      </div>
+      <div class="formula-card">
+        <h4>Regel van Bayes</h4>
+        <div class="formula">P(A|B) = P(B|A) · P(A) / P(B)</div>
+        <p>Draai de voorwaardelijkheid om. Basis voor Naïeve Bayes (spamfilter, tekstclassificatie).</p>
+      </div>
+    </div>
+    <div class="callout info" style="margin-top:12px">
+      <span class="callout-icon">💡</span>
+      <p><strong>Totale kans (wet van totale kansen):</strong> P(B) = P(V₁)·P(B|V₁) + P(V₂)·P(B|V₂) + ... Gebruik dit als tussenstap bij Bayes.</p>
+    </div>
+  </div>
+
+  <!-- ══════════════════ CORRELATIE ══════════════════ -->
+  <div class="section-divider" id="correlatie">
+    <span class="section-num">11</span>
+    <span class="section-label">Correlatie</span>
+  </div>
+
+  <div class="callout warning" style="margin-bottom:20px">
+    <span class="callout-icon">⚠</span>
+    <p><strong>Correlatie ≠ causaliteit!</strong> Een statistisch verband betekent niet dat de ene variabele de andere veroorzaakt. Spurious correlations bestaan (bv. piraten en globale opwarming, internetexplorer en verkeersongelukken).</p>
+  </div>
+
+  <div class="grid grid-2 animate">
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Pearson correlatiecoëfficiënt</div>
+      <p style="margin-bottom:10px">Voor twee <strong>kwantitatieve</strong> variabelen (minstens interval). Zet eerst om naar Z-scores, vermenigvuldig en neem het gemiddelde.</p>
+      <div class="formula-grid">
+        <div class="formula-card">
+          <h4>Formule</h4>
+          <div class="formula">r = (1/n) · Σ zₓᵢ · z_yᵢ</div>
+          <p>Resultaat altijd tussen −1 en +1.</p>
+        </div>
+      </div>
+      <div class="table-wrap" style="margin-top:10px">
+        <table>
+          <thead><tr><th>Waarde r</th><th>Interpretatie</th></tr></thead>
+          <tbody>
+            <tr><td>0</td><td>Geen lineair verband</td></tr>
+            <tr><td>0 – 0,2</td><td>Nauwelijks lineair verband</td></tr>
+            <tr><td>0,2 – 0,4</td><td>Zwak lineair verband</td></tr>
+            <tr><td>0,4 – 0,6</td><td>Redelijk lineair verband</td></tr>
+            <tr><td>0,6 – 0,8</td><td>Sterk lineair verband</td></tr>
+            <tr><td>0,8 – 1</td><td>Zeer sterk lineair verband</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot purple"></span>Rangcorrelatie (ordinale variabelen)</div>
+      <p style="margin-bottom:10px">Bij <strong>ordinale variabelen</strong>: zet eerst om naar rangnummers (kleinste = 1, grootste = n; dubbels krijgen het gemiddelde rangnummer).</p>
+      <div class="grid" style="gap:10px; margin-top:8px">
+        <div class="formula-card">
+          <h4>Spearman</h4>
+          <div class="formula">Pearson op rangnummers</div>
+          <p>Niet helemaal correct (rangnummers zijn ordinaal, niet interval), maar breed gebruikt. LinkedIn voorbeeld: r=0,763</p>
+        </div>
+        <div class="formula-card">
+          <h4>Kendall (τ)</h4>
+          <div class="formula">score / #combinaties</div>
+          <p>Tel concordante en discordante paren. Correcter voor ordinale data. Niet beschikbaar in Orange.</p>
+        </div>
+      </div>
+      <div class="callout info" style="margin-top:10px">
+        <span class="callout-icon">📌</span>
+        <p><strong>Stelregel:</strong> Interval/ratio → Pearson. Ordinaal → Spearman of Kendall.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ REGRESSIE ══════════════════ -->
+  <div class="section-divider" id="regressie">
+    <span class="section-num">12</span>
+    <span class="section-label">Regressie</span>
+  </div>
+
+  <div class="callout info" style="margin-bottom:20px">
+    <span class="callout-icon">📈</span>
+    <p>Regressie zoekt de best passende lijn (of curve) door een puntenwolk. Vereist minstens <strong>interval</strong> meetniveau. Hoge Pearson correlatie is een vereiste voor lineaire regressie. De lijn kan ook gebruikt worden om <strong>voorspellingen</strong> te maken.</p>
+  </div>
+
+  <div class="grid animate">
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Bivariate lineaire regressie</div>
+      <div class="formula-grid" style="margin-top:8px">
+        <div class="formula-card">
+          <h4>Vergelijking</h4>
+          <div class="formula">y = a + b · x</div>
+          <p>a = intercept (hoogte). b = richtingscoëfficiënt (slope).</p>
+        </div>
+        <div class="formula-card">
+          <h4>Optimale coëfficiënten</h4>
+          <div class="formula">b = r · (sᵧ / sₓ)<br>a = ȳ − b · x̄</div>
+          <p>Minimaliseren van de standaardfout se.</p>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot green"></span>Kwaliteitsmaten</div>
+      <div class="formula-grid" style="margin-top:8px">
+        <div class="formula-card">
+          <h4>Standaardfout (se / RMSE)</h4>
+          <div class="formula">se = √[(1/n)·Σ((a+b·xᵢ)−yᵢ)²]</div>
+          <p>Gemiddelde afwijking van voorspelling. Zo <strong>klein</strong> mogelijk.</p>
+        </div>
+        <div class="formula-card">
+          <h4>Verklaarde variantie (R²)</h4>
+          <div class="formula">R² = 1 − (se² / sᵧ²)</div>
+          <p>Deel van variatie dat het model verklaart. Zo <strong>groot</strong> mogelijk (tussen 0 en 1). Bij lineaire regressie: R² = r².</p>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot yellow"></span>Voorspellingen &amp; Betrouwbaarheid</div>
+      <ul>
+        <li><strong>Voorspelling:</strong> vul x in de vergelijking in</li>
+        <li>De voorspelling wijkt gemiddeld <em>se</em> af!</li>
+        <li>68,2% zeker: waarde ligt in [y − se, y + se]</li>
+        <li>95,5% zeker: waarde ligt in [y − 2·se, y + 2·se]</li>
+      </ul>
+      <div class="callout info" style="margin-top:10px">
+        <span class="callout-icon">📌</span>
+        <p>LinkedIn voorbeeld: a=651,64 ; b=8,91 ; se=511,33 ; R²=0,73. Het model verklaart 73% van het loon via het aantal connecties.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:16px" class="grid grid-2 animate delay-1">
+    <div class="card">
+      <div class="card-title"><span class="dot purple"></span>Multivariate lineaire regressie</div>
+      <div class="formula-grid" style="margin-top:8px">
+        <div class="formula-card">
+          <h4>Vergelijking</h4>
+          <div class="formula">y = a + b·x₁ + c·x₂ + d·x₃ + ...</div>
+          <p>Lineaire combinatie / gewogen som van meerdere onafhankelijke variabelen.</p>
+        </div>
+      </div>
+      <ul style="margin-top:10px">
+        <li>Na <strong>normalisatie</strong> (Z-scores) zijn coëfficiënten vergelijkbaar → zie welke variabele de grootste rol speelt</li>
+        <li>Positieve coëfficiënt: variabele verhoogt de target</li>
+        <li>Negatieve coëfficiënt: variabele verlaagt de target</li>
+        <li>Coëfficiënt ≈ 0: variabele heeft weinig invloed</li>
+        <li>Discrete variabelen via <strong>one-hot-encoding</strong> omzetten</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot orange" style="background:var(--orange)"></span>Niet-lineaire regressie</div>
+      <p style="margin-bottom:10px">Als er geen rechte lijn door de punten past:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Type</th><th>Vergelijking</th></tr></thead>
+          <tbody>
+            <tr><td>Kwadratisch</td><td style="font-family:monospace;font-size:12px">y = a + b·x + c·x²</td></tr>
+            <tr><td>Kubisch</td><td style="font-family:monospace;font-size:12px">y = a + b·x + c·x² + d·x³</td></tr>
+            <tr><td>Exponentieel</td><td style="font-family:monospace;font-size:12px">y = e^(a+b·x)</td></tr>
+            <tr><td>Logaritmisch</td><td style="font-family:monospace;font-size:12px">y = a + b·log(x)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout warning" style="margin-top:10px">
+        <span class="callout-icon">⚠</span>
+        <p>Hogere graad = lager se maar risico op <strong>overfitting</strong>. Kies het eenvoudigste model dat goed genoeg past.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- ══════════  ORANGE GEDEELTE  ══════════════════════ -->
+  <!-- ═══════════════════════════════════════════════════ -->
+
+  <div class="section-divider" id="orange-data" style="margin-top:72px">
+    <span class="section-num" style="background:var(--orange-soft); border-color:var(--orange-border); color:var(--orange)">◈</span>
+    <span class="section-label" style="color:var(--orange)">Orange — Data inlezen &amp; bewerken</span>
+  </div>
+
+  <div class="orange-section-banner">
+    <span class="icon">🟠</span>
+    <div>
+      <h3>Orange Data Mining — Alles wat je in Orange moet kunnen</h3>
+      <p>Open-source tool voor data visualisatie, machine learning en datamining. Basisprincipe: <strong>widgets</strong> met input(s) en output(s) als datatabel. Download: orangedatamining.com · Add-ons: Associate, Educational, Timeseries.</p>
+    </div>
+  </div>
+
+  <div class="grid grid-2 animate">
+    <div class="card orange-card">
+      <div class="card-title"><span class="dot orange"></span>CSV-bestanden inlezen</div>
+      <ul>
+        <li><strong>Delimiter/separator:</strong> komma of puntkomma</li>
+        <li><strong>Header:</strong> optioneel (rechtermuisklik op lijnnummer → skip/header)</li>
+        <li><strong>Kommagetallen:</strong> "," of "."</li>
+        <li><strong>Encoding:</strong> UTF-8 of latin1</li>
+        <li><strong>Strings:</strong> optioneel aanhalingstekens</li>
+      </ul>
+      <div class="tags" style="margin-top:12px">
+        <span class="tag orange">CSV File Import</span>
+        <span class="tag orange">Data Table</span>
+      </div>
+    </div>
+    <div class="card orange-card">
+      <div class="card-title"><span class="dot orange"></span>Datatypes instellen</div>
+      <div class="table-wrap" style="margin-top:8px">
+        <table>
+          <thead><tr><th>Type</th><th>Gebruik voor</th></tr></thead>
+          <tbody>
+            <tr><td style="color:#fb923c">Numeric</td><td>Kolom bevat getallen</td></tr>
+            <tr><td style="color:#fb923c">Categorical</td><td>Kolom bevat categorieën</td></tr>
+            <tr><td style="color:#fb923c">Text</td><td>Vrije tekst of te veel categorieën</td></tr>
+            <tr><td style="color:#fb923c">DateTime</td><td>Tijdstippen</td></tr>
+            <tr><td style="color:#fb923c">Ignore</td><td>ID's of irrelevante kolommen</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout orange" style="margin-top:10px">
+        <span class="callout-icon">⚠</span>
+        <p>Dit is NIET het meetniveau! Orange veronderstelt: Categorical = nominaal/ordinaal, Numeric = interval/ratio.</p>
+      </div>
+      <div class="tags" style="margin-top:10px">
+        <span class="tag orange">Edit Domain</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:16px" class="grid animate delay-1">
+    <div class="card orange-card">
+      <div class="card-title"><span class="dot orange"></span>Ordinale volgorde instellen</div>
+      <p>Meetniveaus kan je niet instellen in Orange. Maar je kan de <strong>volgorde van ordinale (Categorical) variabelen</strong> instellen — standaard is dit alfabetisch.</p>
+      <div class="tags" style="margin-top:10px"><span class="tag orange">Edit Domain</span></div>
+    </div>
+    <div class="card orange-card">
+      <div class="card-title"><span class="dot orange"></span>Kolommen selecteren</div>
+      <ul>
+        <li>Verwijder onnodige kolommen</li>
+        <li>Selecteer de <strong>afhankelijke variabele (target)</strong></li>
+        <li>Stel de volgorde van kolommen in</li>
+      </ul>
+      <div class="tags" style="margin-top:10px"><span class="tag orange">Select Columns</span></div>
+    </div>
+    <div class="card orange-card">
+      <div class="card-title"><span class="dot orange"></span>Rijen selecteren &amp; filteren</div>
+      <ul>
+        <li>Verwijder rijen met ontbrekende/verkeerde/extreme waarden</li>
+        <li>Voeg condities toe — enkel rijen die aan ALLE condities voldoen worden geselecteerd</li>
+      </ul>
+      <div class="tags" style="margin-top:10px"><span class="tag orange">Select Rows</span></div>
+    </div>
+    <div class="card orange-card">
+      <div class="card-title"><span class="dot orange"></span>Ontbrekende waarden (Impute)</div>
+      <ul>
+        <li><strong>Negeren</strong> — sommige algoritmes kunnen hiermee omgaan</li>
+        <li><strong>Verwijderen</strong> — verwijdert de hele rij!</li>
+        <li><strong>Vervangen</strong> — door gemiddelde, mediaan of modus</li>
+        <li><strong>Interpoleren</strong> — bij tijdsgebonden data</li>
+      </ul>
+      <div class="tags" style="margin-top:10px"><span class="tag orange">Impute</span></div>
+    </div>
+  </div>
+
+  <div style="margin-top:16px" class="grid grid-2 animate delay-2">
+    <div class="card orange-card">
+      <div class="card-title"><span class="dot orange"></span>Discretize — getallen → categorieën</div>
+      <p>Continue variabele opsplitsen in klassen (bins/intervals). Je kan kiezen:</p>
+      <ul style="margin-top:8px">
+        <li>Zelfgedefinieerde grenzen</li>
+        <li>Aantal klassen</li>
+        <li>Klassebreedte</li>
+      </ul>
+      <div class="callout orange" style="margin-top:10px">
+        <span class="callout-icon">📌</span>
+        <p>Na discretize wordt het meetniveau <strong>ordinaal</strong> (Categorical in Orange).</p>
+      </div>
+      <div class="tags" style="margin-top:8px"><span class="tag orange">Discretize</span></div>
+    </div>
+    <div class="card orange-card">
+      <div class="card-title"><span class="dot orange"></span>Continuize — categorieën → getallen</div>
+      <p>Categorische variabele omzetten naar numerieke waarden:</p>
+      <ul style="margin-top:8px">
+        <li><strong>Opeenvolgende nummers</strong> — voor ordinale variabelen (start bij 0)</li>
+        <li><strong>One-hot encoding</strong> — vervang 1 kolom door meerdere (1 per mogelijke waarde); waarden zijn 0 of 1, slechts één 1 per rij</li>
+      </ul>
+      <div class="tags" style="margin-top:8px"><span class="tag orange">Continuize</span></div>
+    </div>
+  </div>
+
+  <div style="margin-top:16px" class="card orange-card animate delay-3">
+    <div class="card-title"><span class="dot orange"></span>Afgeleide variabelen (Formula)</div>
+    <p style="margin-bottom:12px">Nieuwe variabele maken aan de hand van andere bestaande variabelen:</p>
+    <div class="grid" style="gap:10px">
+      <div style="background:rgba(0,0,0,0.2); border-radius:8px; padding:12px; font-size:13px; color:var(--text-dim)">Som van 2 variabelen</div>
+      <div style="background:rgba(0,0,0,0.2); border-radius:8px; padding:12px; font-size:13px; color:var(--text-dim)">Omzetten naar percentages</div>
+      <div style="background:rgba(0,0,0,0.2); border-radius:8px; padding:12px; font-size:13px; color:var(--text-dim)">Getallen afronden</div>
+      <div style="background:rgba(0,0,0,0.2); border-radius:8px; padding:12px; font-size:13px; color:var(--text-dim)">Dummy variabele introduceren</div>
+    </div>
+    <div class="tags" style="margin-top:12px"><span class="tag orange">Formula</span></div>
+  </div>
+
+  <!-- ══════════════════ ORANGE FREQUENTIES ══════════════ -->
+  <div class="section-divider" id="orange-freq">
+    <span class="section-num" style="background:var(--orange-soft); border-color:var(--orange-border); color:var(--orange)">◈</span>
+    <span class="section-label" style="color:var(--orange)">Orange — Frequenties berekenen</span>
+  </div>
+
+  <div class="grid grid-2 animate">
+    <div class="card orange-card">
+      <div class="card-title"><span class="dot orange"></span>Stap-voor-stap: frequenties in Orange</div>
+      <ol class="steps orange-steps">
+        <li>CSV inlezen + datatypes juist zetten (Edit Domain)</li>
+        <li>Volgorde van ordinale variabelen instellen</li>
+        <li>Discrete variabelen behouden, continue opsplitsen (Discretize)</li>
+        <li>Enkel de gewenste kolom selecteren (Select Columns)</li>
+        <li>Ontbrekende waarden verwijderen (Select Rows of Impute)</li>
+        <li>Distributions widget: beweeg muis over staafdiagram → abs. + rel. frequentie zichtbaar</li>
+        <li>Python Script voor cumulatieve frequenties</li>
+      </ol>
+    </div>
+    <div class="card orange-card">
+      <div class="card-title"><span class="dot orange"></span>Distributions widget — tips</div>
+      <ul>
+        <li>Beweeg muis over staafdiagram → zie absolute én relatieve frequentie</li>
+        <li>Selecteer meerdere kolommen → cumulatieve frequentie onderaan zichtbaar</li>
+        <li><strong>Niet</strong> "Show relative frequencies" aanvinken bij handmatige berekening!</li>
+        <li>Let op: frequenties zijn niet altijd zinvol voor elke variabele</li>
+      </ul>
+      <div class="tags" style="margin-top:10px">
+        <span class="tag orange">Distributions</span>
+        <span class="tag orange">Pivot Table</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:16px" class="card orange-card animate delay-1">
+    <div class="card-title"><span class="dot orange"></span>Python Script — Cumulatieve frequenties berekenen</div>
+    <div class="code-block" style="margin-top:10px">
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">from</span> Orange.data <span class="kw">import</span> ContinuousVariable, DiscreteVariable, Domain
+
+<span class="cm">## kopie van input data</span>
+out_data = in_data.copy()
+
+<span class="cm">## absolute frequenties ophalen</span>
+absolute_frequencies = out_data[:,(<span class="str">'Count'</span>)]
+
+<span class="cm">## nieuwe kolommen berekenen</span>
+relative_frequencies = (absolute_frequencies / np.sum(absolute_frequencies))[:,<span class="num">0</span>]
+cumulative_frequencies = np.cumsum(absolute_frequencies)
+cumulative_percentages = cumulative_frequencies / np.sum(absolute_frequencies) * <span class="num">100</span>
+
+<span class="cm">## kolommen toevoegen aan domain en data invullen</span>
+<span class="cm">## (herhaal voor elke nieuwe variabele: Relative, Cumulative, Cumulative percentage)</span>
+    </div>
+    <div class="callout orange" style="margin-top:12px">
+      <span class="callout-icon">🔗</span>
+      <p>Let op de juiste koppeling: Distributions → Python Script → Data Table</p>
+    </div>
+    <div class="tags" style="margin-top:10px"><span class="tag orange">Python Script</span></div>
+  </div>
+
+  <!-- ══════════════════ ORANGE VISUALISATIES ══════════== -->
+  <div class="section-divider" id="orange-viz">
+    <span class="section-num" style="background:var(--orange-soft); border-color:var(--orange-border); color:var(--orange)">◈</span>
+    <span class="section-label" style="color:var(--orange)">Orange — Visualisaties</span>
+  </div>
+
+  <div class="grid animate">
+    <div class="card orange-card">
+      <div class="card-title"><span class="dot orange"></span>Taartdiagram (Pie Chart)</div>
+      <ul>
+        <li>Voor discrete/categorische variabelen</li>
+        <li>Orange biedt <strong>geen goede implementatie</strong> — liever staafdiagram gebruiken</li>
+        <li>Bivariate analyse mogelijk: splits op een andere variabele</li>
+      </ul>
+      <div class="tags" style="margin-top:10px"><span class="tag orange">Pie Chart</span></div>
+    </div>
+    <div class="card orange-card">
+      <div class="card-title"><span class="dot orange"></span>Staafdiagram &amp; Distributies</div>
+      <ul>
+        <li>Kies een <strong>discrete variabele</strong> → staafdiagram</li>
+        <li>Kies een <strong>continue variabele</strong> → histogram (X-as continu)</li>
+        <li>Balken <strong>stapelen</strong> mogelijk voor bivariate analyse</li>
+        <li>Balken <strong>normaliseren</strong> → percentages tonen</li>
+        <li>Splitsen enkel op categorische variabele</li>
+      </ul>
+      <div class="tags" style="margin-top:10px"><span class="tag orange">Distributions</span></div>
+    </div>
+    <div class="card orange-card">
+      <div class="card-title"><span class="dot orange"></span>Frequentiepolygoon (Line Chart)</div>
+      <ul>
+        <li>Gebruik bij continue variabele + Discretize</li>
+        <li>Workflow: Discretize → Distributions met Line Chart</li>
+        <li>X-as toont dan discrete klassen (meetniveau: ordinaal/categorical)</li>
+        <li>Let op: schaal klopt niet meer bij rechtstreekse gebruik op continue variabele</li>
+      </ul>
+      <div class="tags" style="margin-top:10px">
+        <span class="tag orange">Line Chart</span>
+        <span class="tag orange">Discretize</span>
+      </div>
+    </div>
+    <div class="card orange-card">
+      <div class="card-title"><span class="dot orange"></span>Box Plot</div>
+      <ul>
+        <li>Kies een <strong>continue variabele</strong></li>
+        <li>Splits op categorische variabele → meerdere boxplots</li>
+        <li>Orange toont ook gemiddelde en standaardafwijking (niet gebruikelijk)</li>
+        <li>Kwartielen zichtbaar; Orange toont <strong>geen uitschieters</strong></li>
+      </ul>
+      <div class="tags" style="margin-top:10px"><span class="tag orange">Box Plot</span></div>
+    </div>
+    <div class="card orange-card">
+      <div class="card-title"><span class="dot orange"></span>Violin Plot</div>
+      <ul>
+        <li>Toont ook de <strong>verdeling</strong> van de data (niet alleen kwartielen)</li>
+        <li>Bivariate analyse: kies een categorische variabele</li>
+        <li>Boxplot bovenop de viool tekenen is mogelijk</li>
+      </ul>
+      <div class="tags" style="margin-top:10px"><span class="tag orange">Violin Plot</span></div>
+    </div>
+    <div class="card orange-card">
+      <div class="card-title"><span class="dot orange"></span>Scatter Plot (Correlaties)</div>
+      <ul>
+        <li>Visualiseert het verband tussen 2 continue variabelen</li>
+        <li>Zet eigenschappen en datatypes correct in vóór gebruik</li>
+        <li>Bivariate analyse mogelijk</li>
+      </ul>
+      <div class="tags" style="margin-top:10px"><span class="tag orange">Scatter Plot</span></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ COMPLETE WIDGET LIJST ══════════== -->
+  <div style="margin-top:32px" class="card orange-card animate">
+    <div class="card-title"><span class="dot orange"></span>Alle Orange widgets uit de cursus</div>
+    <div class="widget-list">
+      <span class="widget-pill">CSV File Import</span>
+      <span class="widget-pill">Data Table</span>
+      <span class="widget-pill">Edit Domain</span>
+      <span class="widget-pill">Select Columns</span>
+      <span class="widget-pill">Select Rows</span>
+      <span class="widget-pill">Impute</span>
+      <span class="widget-pill">Continuize</span>
+      <span class="widget-pill">Discretize</span>
+      <span class="widget-pill">Formula</span>
+      <span class="widget-pill">Distributions</span>
+      <span class="widget-pill">Python Script</span>
+      <span class="widget-pill">Pivot Table</span>
+      <span class="widget-pill">Pie Chart</span>
+      <span class="widget-pill">Line Chart</span>
+      <span class="widget-pill">Box Plot</span>
+      <span class="widget-pill">Violin Plot</span>
+      <span class="widget-pill">Scatter Plot</span>
+      <span class="widget-pill">Group by</span>
+      <span class="widget-pill">Correlations</span>
+      <span class="widget-pill">Linear Regression</span>
+      <span class="widget-pill">Polynomial Regression</span>
+      <span class="widget-pill">Predictions</span>
+      <span class="widget-pill">Create Instance</span>
+    </div>
+  </div>
+
+  <!-- ══════════════════ ORANGE CENTRUMMATEN ══════════════ -->
+  <div class="section-divider" id="orange-centrum" style="margin-top:72px">
+    <span class="section-num" style="background:var(--orange-soft); border-color:var(--orange-border); color:var(--orange)">◈</span>
+    <span class="section-label" style="color:var(--orange)">Orange — Centrummaten berekenen</span>
+  </div>
+
+  <div class="orange-section-banner">
+    <span class="icon">🟠</span>
+    <div>
+      <h3>Modus, Mediaan &amp; Gemiddelde in Orange</h3>
+      <p>Via de <strong>Group by</strong> widget bereken je centrummaten per variabele. Let op: ordinale variabelen worden eerst omgezet naar volgnummers; de gevonden waarden zijn dan rangnummers die je moet terugomzetten.</p>
+    </div>
+  </div>
+
+  <div class="grid grid-2 animate">
+    <div class="card orange-card">
+      <div class="card-title"><span class="dot orange"></span>Stap-voor-stap: centrummaten</div>
+      <ol class="steps orange-steps">
+        <li>CSV inlezen + datatypes juist zetten (Edit Domain)</li>
+        <li>Volgorde van ordinale variabelen instellen</li>
+        <li>Dummy variabele aanmaken voor nominale variabelen (Formula)</li>
+        <li>Continue variabelen in klassen opsplitsen (Discretize)</li>
+        <li>Alle nominale variabelen behouden; ordinale omzetten naar volgnummers (Continuize)</li>
+        <li><strong>Modus:</strong> Group by → selecteer "mode" voor alle variabelen</li>
+        <li><strong>Mediaan:</strong> Group by → selecteer "median" waar zinvol (ordinaal+)</li>
+        <li><strong>Gemiddelde:</strong> Group by → selecteer "mean" waar zinvol (interval+)</li>
+        <li>Resultaat bekijken in Data Table</li>
+      </ol>
+    </div>
+    <div class="card orange-card">
+      <div class="card-title"><span class="dot orange"></span>Aandachtspunten per centrummaat</div>
+      <div class="callout orange" style="margin-bottom:12px">
+        <span class="callout-icon">⚠</span>
+        <p><strong>Ordinale mediaan/kwartielen:</strong> Orange toont volgnummers! Je moet deze terug omzetten naar de bijhorende categoriewaarde.</p>
+      </div>
+      <ul>
+        <li><strong>Modus:</strong> geldig voor alle variabelen (ook nominaal)</li>
+        <li><strong>Mediaan:</strong> enkel zinvol voor ordinaal en hoger</li>
+        <li><strong>Gemiddelde:</strong> enkel zinvol voor interval en hoger</li>
+        <li>Dummy variabele voor nominale kolommen: laat toe modus te berekenen via Group by</li>
+      </ul>
+      <div class="tags" style="margin-top:12px">
+        <span class="tag orange">Formula</span>
+        <span class="tag orange">Discretize</span>
+        <span class="tag orange">Continuize</span>
+        <span class="tag orange">Group by</span>
+        <span class="tag orange">Data Table</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ ORANGE SPREIDINGSMATEN ══════════ -->
+  <div class="section-divider" id="orange-spreiding">
+    <span class="section-num" style="background:var(--orange-soft); border-color:var(--orange-border); color:var(--orange)">◈</span>
+    <span class="section-label" style="color:var(--orange)">Orange — Spreidingsmaten berekenen</span>
+  </div>
+
+  <div class="grid grid-2 animate">
+    <div class="card orange-card">
+      <div class="card-title"><span class="dot orange"></span>Stap-voor-stap: kwartielen &amp; standaardafwijking</div>
+      <ol class="steps orange-steps">
+        <li>CSV inlezen + datatypes juist zetten (Edit Domain)</li>
+        <li>Volgorde van ordinale variabelen instellen</li>
+        <li>Dummy variabele aanmaken (Formula)</li>
+        <li>Nominale variabelen behouden; ordinale omzetten naar volgnummers (Continuize)</li>
+        <li><strong>Kwartielen:</strong> Group by → selecteer Q1 en Q3 voor variabelen waar zinvol</li>
+        <li><strong>Standaardafwijking:</strong> Group by → selecteer standaardafwijking voor interval/ratio</li>
+        <li>Resultaat bekijken in Data Table</li>
+      </ol>
+    </div>
+    <div class="card orange-card">
+      <div class="card-title"><span class="dot orange"></span>Aandachtspunten</div>
+      <div class="callout orange" style="margin-bottom:12px">
+        <span class="callout-icon">⚠</span>
+        <p><strong>Ordinale kwartielen:</strong> zijn volgnummers — omzetten naar bijhorende waarde!</p>
+      </div>
+      <ul>
+        <li><strong>IQR:</strong> zelf berekenen als Q3 − Q1 na het ophalen van de kwartielen</li>
+        <li><strong>Standaardafwijking:</strong> enkel zinvol voor interval/ratio</li>
+        <li>Dezelfde workflow als centrummaten (zelfde preprocessing)</li>
+      </ul>
+      <div class="tags" style="margin-top:12px">
+        <span class="tag orange">Formula</span>
+        <span class="tag orange">Continuize</span>
+        <span class="tag orange">Group by</span>
+        <span class="tag orange">Data Table</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ ORANGE UITSCHIETERS ══════════════ -->
+  <div class="section-divider" id="orange-uitschieters">
+    <span class="section-num" style="background:var(--orange-soft); border-color:var(--orange-border); color:var(--orange)">◈</span>
+    <span class="section-label" style="color:var(--orange)">Orange — Uitschieters &amp; Normalisatie</span>
+  </div>
+
+  <div class="grid grid-2 animate">
+    <div class="card orange-card">
+      <div class="card-title"><span class="dot orange"></span>Uitschieters detecteren en verwijderen</div>
+      <ol class="steps orange-steps">
+        <li>CSV inlezen + datatypes juist zetten</li>
+        <li>Volgorde ordinale variabelen instellen</li>
+        <li>Dummy variabele aanmaken (Formula)</li>
+        <li>Q1 en Q3 berekenen (Group by)</li>
+        <li>Grenzen berekenen: low = Q1 − 1.5×IQR ; high = Q3 + 1.5×IQR</li>
+        <li>Select Rows: vul de berekende grenzen in als conditie → behoudt rijen zonder uitschieters</li>
+      </ol>
+      <div class="callout orange" style="margin-top:10px">
+        <span class="callout-icon">⚠</span>
+        <p>Select Rows verwijdert ook rijen met ontbrekende waarden in de gefilterde kolommen. "Unmatching data" = de rijen mét uitschieters.</p>
+      </div>
+      <div class="tags" style="margin-top:10px">
+        <span class="tag orange">Group by</span>
+        <span class="tag orange">Select Rows</span>
+        <span class="tag orange">Data Table</span>
+      </div>
+    </div>
+    <div class="card orange-card">
+      <div class="card-title"><span class="dot orange"></span>Z-scores berekenen (normalisatie)</div>
+      <p style="margin-bottom:10px">Standaardiseer variabelen zodat ze vergelijkbaar worden (gemiddelde=0, variantie=1):</p>
+      <ol class="steps orange-steps">
+        <li>Selecteer de te standaardiseren variabelen</li>
+        <li>Continuize (of Normalize widget): zet gemiddelde op 0 en variantie op 1</li>
+        <li>De kolommen zijn nu omgezet naar Z-scores</li>
+      </ol>
+      <div class="callout orange" style="margin-top:10px">
+        <span class="callout-icon">📌</span>
+        <p>Bij multivariate regressie: normaliseer alle onafhankelijke variabelen zodat coëfficiënten vergelijkbaar zijn. De <strong>target</strong> wordt NIET genormaliseerd.</p>
+      </div>
+      <div class="tags" style="margin-top:10px">
+        <span class="tag orange">Continuize</span>
+        <span class="tag orange">Formula</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ ORANGE CORRELATIE ══════════════== -->
+  <div class="section-divider" id="orange-correlatie">
+    <span class="section-num" style="background:var(--orange-soft); border-color:var(--orange-border); color:var(--orange)">◈</span>
+    <span class="section-label" style="color:var(--orange)">Orange — Correlatie berekenen</span>
+  </div>
+
+  <div class="grid grid-2 animate">
+    <div class="card orange-card">
+      <div class="card-title"><span class="dot orange"></span>Pearson correlatie</div>
+      <ol class="steps orange-steps">
+        <li>CSV inlezen + datatypes juist zetten (Edit Domain)</li>
+        <li>Correlations widget: kies <strong>Pearson</strong> correlatie</li>
+        <li>Als er meer dan 2 variabelen zijn: kies welke combinaties je wil zien</li>
+        <li>Scatter Plot wordt automatisch ingesteld op de geselecteerde variabelen</li>
+      </ol>
+      <div class="tags" style="margin-top:10px">
+        <span class="tag orange">Edit Domain</span>
+        <span class="tag orange">Correlations</span>
+        <span class="tag orange">Scatter Plot</span>
+      </div>
+    </div>
+    <div class="card orange-card">
+      <div class="card-title"><span class="dot orange"></span>Spearman rangcorrelatie</div>
+      <ol class="steps orange-steps">
+        <li>CSV inlezen (rechtermuisklik: stel header in)</li>
+        <li>Edit Domain: datatypes juist zetten</li>
+        <li>Volgorde van ordinale variabelen instellen</li>
+        <li>Scatter Plot: kies onafhankelijke en afhankelijke variabele; speel met opties voor duidelijkheid</li>
+        <li>Continuize: alle ordinale variabelen omzetten naar volgnummers</li>
+        <li>Correlations widget: kies <strong>Spearman</strong> correlatie</li>
+      </ol>
+      <div class="tags" style="margin-top:10px">
+        <span class="tag orange">Edit Domain</span>
+        <span class="tag orange">Continuize</span>
+        <span class="tag orange">Scatter Plot</span>
+        <span class="tag orange">Correlations</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ ORANGE REGRESSIE ══════════════== -->
+  <div class="section-divider" id="orange-regressie">
+    <span class="section-num" style="background:var(--orange-soft); border-color:var(--orange-border); color:var(--orange)">◈</span>
+    <span class="section-label" style="color:var(--orange)">Orange — Regressie</span>
+  </div>
+
+  <div class="orange-section-banner">
+    <span class="icon">🟠</span>
+    <div>
+      <h3>Regressie in Orange</h3>
+      <p>Orange ondersteunt bivariate lineaire regressie, multivariate lineaire regressie (met of zonder normalisatie) en niet-lineaire (polynomiale) regressie. Gebruik <strong>Select Columns</strong> om de afhankelijke variabele in te stellen.</p>
+    </div>
+  </div>
+
+  <div class="grid animate">
+    <div class="card orange-card">
+      <div class="card-title"><span class="dot orange"></span>Bivariate lineaire regressie</div>
+      <ol class="steps orange-steps">
+        <li>CSV inlezen + datatypes juist zetten</li>
+        <li>Select Columns: stel afhankelijke en onafhankelijke variabele in</li>
+        <li>Scatter Plot: visualiseer het verband (kies de juiste assen)</li>
+        <li>Linear Regression widget: kies de juiste instellingen</li>
+        <li>Data Table: bekijk de coëfficiënten (intercept + slope)</li>
+        <li>Data Table (tweede): bekijk se en R²</li>
+        <li>Scatter Plot: voeg de regressielijn toe aan de grafiek</li>
+        <li><strong>Voorspelling:</strong> Create Instance → vul waarde in → Predictions widget</li>
+      </ol>
+      <div class="tags" style="margin-top:10px">
+        <span class="tag orange">Select Columns</span>
+        <span class="tag orange">Scatter Plot</span>
+        <span class="tag orange">Linear Regression</span>
+        <span class="tag orange">Data Table</span>
+        <span class="tag orange">Predictions</span>
+        <span class="tag orange">Create Instance</span>
+      </div>
+    </div>
+    <div class="card orange-card">
+      <div class="card-title"><span class="dot orange"></span>Niet-lineaire regressie</div>
+      <ol class="steps orange-steps">
+        <li>CSV inlezen + datatypes juist zetten</li>
+        <li>Scatter Plot: kies afhankelijke en onafhankelijke variabele</li>
+        <li>Select Columns: stel afhankelijke variabele in</li>
+        <li>Polynomial Regression widget: probeer verschillende graden (lineair, kwadratisch, kubisch, ...)</li>
+        <li>Vergelijk R² en se voor elke graad → kies het beste model</li>
+        <li>Data Table: coëfficiënten per graad bekijken</li>
+        <li>Predictions: voorspellingen maken</li>
+      </ol>
+      <div class="callout orange" style="margin-top:10px">
+        <span class="callout-icon">📌</span>
+        <p>Hogere graad → lagere se maar risico op overfitting. Kies het eenvoudigste model dat goed past.</p>
+      </div>
+      <div class="tags" style="margin-top:10px">
+        <span class="tag orange">Scatter Plot</span>
+        <span class="tag orange">Select Columns</span>
+        <span class="tag orange">Polynomial Regression</span>
+        <span class="tag orange">Predictions</span>
+        <span class="tag orange">Data Table</span>
+      </div>
+    </div>
+    <div class="card orange-card">
+      <div class="card-title"><span class="dot orange"></span>Multivariate regressie (exploratie + model)</div>
+      <ol class="steps orange-steps">
+        <li>CSV inlezen + datatypes juist zetten</li>
+        <li><strong>Exploratie:</strong> Scatter Plot met verschillende variabelenparen; Correlations widget voor alle combinaties</li>
+        <li>Select Columns: stel de afhankelijke variabele en meerdere onafhankelijke variabelen in</li>
+        <li>Linear Regression: bekijk coëfficiënten, se en R²</li>
+        <li><strong>Met normalisatie:</strong> Continuize → zet discrete vars om naar one-hot encoding; continue vars naar Z-scores (target NIET)</li>
+        <li>Vergelijk coëfficiënten na normalisatie om belang van variabelen te vergelijken</li>
+      </ol>
+      <div class="callout orange" style="margin-top:10px">
+        <span class="callout-icon">💡</span>
+        <p>Na normalisatie: grote coëfficiënt = grote invloed. Positief = verhoogt target. Negatief = verlaagt target. ≈ 0 = weinig invloed.</p>
+      </div>
+      <div class="tags" style="margin-top:10px">
+        <span class="tag orange">Correlations</span>
+        <span class="tag orange">Select Columns</span>
+        <span class="tag orange">Continuize</span>
+        <span class="tag orange">Linear Regression</span>
+        <span class="tag orange">Data Table</span>
+        <span class="tag orange">Predictions</span>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<footer>
+  Data Science 1 · KdG · 2025–2026 · Samenvatting gegenereerd op basis van cursusmateriaal · kris.demuynck@kdg.be
+</footer>
+
+</body>
+</html>
